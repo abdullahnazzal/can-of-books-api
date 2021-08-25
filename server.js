@@ -46,7 +46,7 @@ function seedDataCollection() {
     book2.save();
     book3.save();
 }
-seedDataCollection(); // npm start
+// seedDataCollection(); // npm start
 // localhost:3001/test
 
 server.get('/test', testHandler);
