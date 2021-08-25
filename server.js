@@ -13,7 +13,8 @@ server.use(cors());
 // Middleware (to parse the request body)
 server.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/Book', { useNewUrlParser: true, useUnifiedTopology: true });
+//MONGO_SERVER=mongodb://localhost:27017/Book
+mongoose.connect(`${process.env.MONGO_SERVER}`, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Schema
 const BookSchema = new mongoose.Schema({
@@ -45,7 +46,7 @@ function seedDataCollection() {
     book2.save();
     book3.save();
 }
-// seedDataCollection(); // npm start
+seedDataCollection(); // npm start
 // localhost:3001/test
 
 server.get('/test', testHandler);
@@ -99,15 +100,15 @@ async function addBooks(req, res) {
     // })
 }
 
-server.delete('/books/:bookID',deleteBook);
+server.delete('/books/:bookID', deleteBook);
 // localhost:3001/deleteCat/454554?email=a.nazzal1995@gmail.com
 
-function deleteBook(req,res) {
+function deleteBook(req, res) {
     console.log("InSide deleteBook");
     let BookDataID = req.params.bookID;
     let email = req.query.email;
-    BookModel.remove({_id:BookDataID},(error,bookData)=>{
-        if(error) {
+    BookModel.remove({ _id: BookDataID }, (error, bookData) => {
+        if (error) {
             console.log('error in deleting the data')
         } else {
             console.log('data deleted', bookData)
@@ -126,8 +127,39 @@ function deleteBook(req,res) {
 
 }
 
+server.put('/updateBook/:bookID', updateBook);
+
+function updateBook(req, res) {
+    let { title, description,email } = req.body;
+    let bookID = req.params.bookID;
+    BookModel.findOne({ _id: bookID }, (error, bookInfo) => {
+        
+                    bookInfo.title = title;
+                    bookInfo.description = description;
+                    bookInfo.save()
+                    .then(()=>{
+                        BookModel.find({ email }, function (err, emailData) {
+                            if (err) {
+                                console.log('error in getting the data')
+                            } else {
+                                // console.log(ownerData);
+                                res.send(emailData)
+                            }
+                        })
+                    }).catch(error=>{
+                        console.log('error in saving ')
+                    })
+                    // console.log(bookInfo);
+                    // res.send(bookInfo)
+                
+            })
+        
+        // bookInfo.title=title;
+        // bookInfo.description=description;
+        // bookInfo.save().then(()=>{
 
 
+}
 
 server.listen(PORT, () => {
     console.log(`listening on PORT ${PORT}`)
